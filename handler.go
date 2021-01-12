@@ -49,6 +49,7 @@ func ListAll(w http.ResponseWriter, r *http.Request) {
 
 func Pull(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
 	targetURL := r.URL.Query().Get("target")
 	streamPath := r.URL.Query().Get("streamPath")
 	if err := new(RTSP).PullStream(streamPath, targetURL); err == nil {
