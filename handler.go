@@ -37,11 +37,17 @@ func makeJsonStrResp(errCode int, msg string, data string) []byte {
 func ListAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
-	var info []*RTSPInfo
+	isAll := r.URL.Query().Get("isAll")
+
+	var info []interface{}
 	collection.Range(func(key, value interface{}) bool {
 		rtsp := value.(*RTSP)
 		pinfo := &rtsp.RTSPInfo
-		info = append(info, pinfo)
+		if isAll == "1" {
+			info = append(info, pinfo)
+		} else {
+			info = append(info, pinfo.URL)
+		}
 		return true
 	})
 	w.Write(makeResp(0, "ok", info))
