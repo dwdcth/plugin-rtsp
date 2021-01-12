@@ -79,6 +79,8 @@ func runPlugin() {
 			}
 		}
 	}
+	http.HandleFunc("/rtsp/Pull", Pull) //fixth
+	http.HandleFunc("/rtsp/List", ListAll)
 	if config.ListenAddr != "" {
 		log.Fatal(ListenRtsp(config.ListenAddr))
 	}
