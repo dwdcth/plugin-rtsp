@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -59,8 +60,15 @@ func Pull(w http.ResponseWriter, r *http.Request) {
 	targetURL := r.URL.Query().Get("target")
 	streamPath := r.URL.Query().Get("streamPath")
 	if err := new(RTSP).PullStream(streamPath, targetURL); err == nil {
-		w.Write(makeResp(0, "", nil))
+		w.Write(makeResp(0, "", streamPath))
 	} else {
-		w.Write(makeResp(-1, err.Error(), nil))
+		var errCode = -1
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "badname") {
+			errCode = 1
+		} else if strings.Contains(errMsg, "timeout") {
+			errCode = 2
+		}
+		w.Write(makeResp(errCode, errMsg, nil))
 	}
 }
