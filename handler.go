@@ -3,6 +3,7 @@ package rtsp
 import (
 	"encoding/json"
 	"fmt"
+	. "github.com/Monibuca/engine/v2"
 	"net/http"
 	"strings"
 	"time"
@@ -70,5 +71,20 @@ func Pull(w http.ResponseWriter, r *http.Request) {
 			errCode = 2
 		}
 		w.Write(makeResp(errCode, errMsg, nil))
+	}
+}
+
+func Stop(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if streamPath := r.URL.Query().Get("stream"); streamPath != "" {
+		if s := FindStream(streamPath); s != nil {
+			s.Cancel()
+			w.Write(makeResp(0, "success", nil))
+		} else {
+			w.Write(makeResp(1, "no such stream", nil))
+		}
+	} else {
+		w.Write(makeResp(-1, "param error", nil))
 	}
 }
