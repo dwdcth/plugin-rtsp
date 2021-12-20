@@ -80,6 +80,7 @@ func DigestAuth(authLine string, method string, URL string) (string, error) {
 	Authorization := fmt.Sprintf("Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", uri=\"%s\", response=\"%s\"", username, realm, nonce, l.String(), response)
 	return Authorization, nil
 }
+
 // auth Basic验证
 func BasicAuth(authLine string, method string, URL string) (string, error) {
 	l, err := url.Parse(URL)
@@ -233,7 +234,7 @@ func (client *RTSP) requestStream() (err error) {
 		case "audio":
 			if len(sdpInfo.Config) > 0 {
 				client.WriteASC(sdpInfo.Config)
-			}else{
+			} else {
 				client.setAudioFormat()
 			}
 			if client.TransType == TRANS_TYPE_TCP {
@@ -333,25 +334,32 @@ func (client *RTSP) startStream() {
 			var pack *RTPPack
 
 			switch channel {
-			case client.aRTPChannel:
+			case client.aRTPChannel: //0
 				pack = &RTPPack{
 					Type: RTP_TYPE_AUDIO,
 				}
-			case client.aRTPControlChannel:
+			case client.aRTPControlChannel: //1
 				pack = &RTPPack{
 					Type: RTP_TYPE_AUDIOCONTROL,
 				}
-			case client.vRTPChannel:
+			case client.vRTPChannel: //2
 				pack = &RTPPack{
 					Type: RTP_TYPE_VIDEO,
 				}
-			case client.vRTPControlChannel:
+			case client.vRTPControlChannel: //3
 				pack = &RTPPack{
 					Type: RTP_TYPE_VIDEOCONTROL,
 				}
 			default:
-				Printf("unknow rtp pack type, channel:%v", channel)
-				continue
+				// 兼容智行摄像头 RTP通道编号是偶数，RTCP通道编号是奇数
+				if channel%2 == 0 {
+					pack = &RTPPack{
+						Type: RTP_TYPE_VIDEO,
+					}
+				} else {
+					Printf("unknow rtp pack type, channel:%v", channel)
+					continue
+				}
 			}
 			pack.Unmarshal(content)
 			//if client.debugLogEnable {
